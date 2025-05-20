@@ -154,16 +154,18 @@ def main():
         if args.dataset == "UniGeo":
             testing_idx = range(1, 21)
         else:
-            testing_idx = [i for i in range(1, 49) if i not in [2, 6, 12, 32, 42]]
+            # testing_idx = [i for i in range(1, 49) if i not in [2, 6, 12, 32, 42]]
+            testing_idx = [1]
 
         for i in tqdm.tqdm(testing_idx):
-            model = GPT4(
-                model=(
-                    "gpt-4-vision-preview"
-                    if args.reasoning == "multi-modal"
-                    else "gpt-4-1106-preview"
-                )
-            )
+            # model = GPT4(
+            #     model=(
+            #         "gpt-4-vision-preview"
+            #         if args.reasoning == "multi-modal"
+            #         else "gpt-4-1106-preview"
+            #     )
+            # )
+            model = AzureModel("o3-mini", max_completion_tokens=1000, temperature=0.2)
             content = deepcopy(example_content)
 
             problem_text = ""
