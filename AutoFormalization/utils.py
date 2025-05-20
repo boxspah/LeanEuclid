@@ -28,15 +28,7 @@ class AzureModel(LanguageModel):
     @override
     def __init__(self, model: str, **request_params):
         super().__init__(model, **request_params)
-
-        # resolve type mismatch error
-        assert (endpoint := os.getenv("AZURE_OPENAI_ENDPOINT")) is not None
-
-        self._client = AzureOpenAI(
-            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-            azure_endpoint=endpoint,
-            api_version="2024-10-21",
-        )
+        self._client = AzureOpenAI(api_version="2024-10-21")
         self._messages: list[ChatCompletionMessageParam] = []
 
     @override
