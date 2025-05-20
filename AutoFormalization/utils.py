@@ -11,14 +11,9 @@ EXAMPLE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "example")
 
 
 class LanguageModel(metaclass=ABCMeta):
-    _model: Final[str]
-    temperature: float
-    max_tokens: int
-
-    def __init__(self, model: str, temperature: float = 0.2, max_tokens: int = 300):
-        self._model = model
-        self.temperature = temperature
-        self.max_tokens = max_tokens
+    def __init__(self, model: str, **request_params):
+        self._model: Final[str] = model
+        self._request_params = request_params
 
     @abstractmethod
     def add_message(self, role: str, content: str) -> Any:
@@ -30,12 +25,9 @@ class LanguageModel(metaclass=ABCMeta):
 
 
 class AzureModel(LanguageModel):
-    _messages: list[ChatCompletionMessageParam]
-    _client: Any
-
     @override
-    def __init__(self, model: str):
-        super().__init__(model)
+    def __init__(self, model: str, **request_params):
+        super().__init__(model, **request_params)
 
         # resolve type mismatch error
         assert (endpoint := os.getenv("AZURE_OPENAI_ENDPOINT")) is not None
@@ -45,7 +37,7 @@ class AzureModel(LanguageModel):
             azure_endpoint=endpoint,
             api_version="2024-10-21",
         )
-        self._messages = []
+        self._messages: list[ChatCompletionMessageParam] = []
 
     @override
     def add_message(self, role, content) -> None:
@@ -56,16 +48,12 @@ class AzureModel(LanguageModel):
         completion = self._client.chat.completions.create(
             model=self._model,
             messages=self._messages,
-            temperature=self.temperature,
-            max_tokens=self.max_tokens,
+            **self._request_params
         )
         return completion.choices[0].message.content
 
 
 class GPT4(LanguageModel):
-    _messages: list[dict[str, str]]
-    _client: Any
-
     @override
     def __init__(
         self,
@@ -73,9 +61,9 @@ class GPT4(LanguageModel):
         temperature: float = 0.2,
         max_tokens: int = 300,
     ):
-        super().__init__(model, temperature, max_tokens)
+        super().__init__(model, temperature=temperature, max_tokens=max_tokens)
         self._client = OpenAI()
-        self._messages = []
+        self._messages: list[ChatCompletionMessageParam] = []
 
     @override
     def add_message(self, role: str, content: str) -> None:
@@ -86,8 +74,7 @@ class GPT4(LanguageModel):
         completion = self._client.chat.completions.create(
             model=self._model,
             messages=self._messages,
-            temperature=self.temperature,
-            max_tokens=self.max_tokens,
+            **self._request_params
         )
         return completion.choices[0].message.content
 
