@@ -1,7 +1,7 @@
 import os
 import base64
 from abc import ABCMeta, abstractmethod
-from typing import Any, Final, override
+from typing import Any, Final, override, cast
 
 from openai import OpenAI, AzureOpenAI
 from openai.types.chat import ChatCompletionMessageParam
@@ -40,15 +40,15 @@ class AzureModel(LanguageModel):
         self._messages: list[ChatCompletionMessageParam] = []
 
     @override
-    def add_message(self, role, content) -> None:
-        self._messages.append({"role": role, "content": content})
+    def add_message(self, role: str, content: str) -> None:
+        self._messages.append(
+            cast(ChatCompletionMessageParam, {"role": role, "content": content})
+        )
 
     @override
     def get_response(self) -> str:
         completion = self._client.chat.completions.create(
-            model=self._model,
-            messages=self._messages,
-            **self._request_params
+            model=self._model, messages=self._messages, **self._request_params
         )
         return completion.choices[0].message.content
 
@@ -67,14 +67,14 @@ class GPT4(LanguageModel):
 
     @override
     def add_message(self, role: str, content: str) -> None:
-        self._messages.append({"role": role, "content": content})
+        self._messages.append(
+            cast(ChatCompletionMessageParam, {"role": role, "content": content})
+        )
 
     @override
     def get_response(self) -> str:
         completion = self._client.chat.completions.create(
-            model=self._model,
-            messages=self._messages,
-            **self._request_params
+            model=self._model, messages=self._messages, **self._request_params
         )
         return completion.choices[0].message.content
 
