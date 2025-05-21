@@ -40,7 +40,7 @@ def lean_error(error):
 
 
 def parse_error():
-    return f"Your output is not in the desired format. Please output the formalized statement within triple angle brackets (<<< Lean expression here >>>)."
+    return "Your output is not in the desired format. Please output the formalized statement within triple angle brackets (<<< Lean expression here >>>)."
 
 
 def format_content(dataset, namespace, theorem_name, theorem, proof):
