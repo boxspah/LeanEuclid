@@ -16,7 +16,7 @@ class LanguageModel(metaclass=ABCMeta):
         self._request_params = request_params
 
     @abstractmethod
-    def add_message(self, role: str, content: str) -> Any:
+    def add_message(self, role: str, content: Any) -> Any:
         pass
 
     @abstractmethod
@@ -32,7 +32,7 @@ class AzureModel(LanguageModel):
         self._messages: list[ChatCompletionMessageParam] = []
 
     @override
-    def add_message(self, role: str, content: str) -> None:
+    def add_message(self, role: str, content: Any) -> None:
         self._messages.append(
             cast(ChatCompletionMessageParam, {"role": role, "content": content})
         )
@@ -58,7 +58,7 @@ class GPT4(LanguageModel):
         self._messages: list[ChatCompletionMessageParam] = []
 
     @override
-    def add_message(self, role: str, content: str) -> None:
+    def add_message(self, role: str, content: Any) -> None:
         self._messages.append(
             cast(ChatCompletionMessageParam, {"role": role, "content": content})
         )

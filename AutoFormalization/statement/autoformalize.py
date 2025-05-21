@@ -132,14 +132,16 @@ def main():
                 c,
             )
         )
-        result_dir = os.path.join(
-            ROOT_DIR,
-            "result",
-            "statement",
-            args.dataset,
-            args.reasoning,
-            str(args.num_examples) + "shot",
-            c,
+        result_dir = str(
+            os.path.join(
+                ROOT_DIR,
+                "result",
+                "statement",
+                args.dataset,
+                args.reasoning,
+                str(args.num_examples) + "shot",
+                c,
+            )
         )
         os.makedirs(result_dir, exist_ok=True)
 
@@ -193,7 +195,7 @@ def main():
                 formal_statement = match.group(1)
                 formal_statement = re.sub(r"\s+", " ", formal_statement)
 
-            content.append({"type": "text", "text": f"Here is your problem:\n"})
+            content.append({"type": "text", "text": "Here is your problem:\n"})
 
             if args.reasoning == "multi-modal":
                 image_path = os.path.join(
