@@ -93,12 +93,11 @@ def main():
         else:
             testing_idx = [i for i in range(1, 49) if i not in {2, 6, 12, 32, 42}]
 
-        tot += len(testing_idx)
-
         for i in tqdm(testing_idx):
             pred_file = os.path.join(pred_dir, str(i) + ".json")
 
             if os.path.isfile(pred_file):
+                tot += 1
                 with open(pred_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
 
@@ -114,7 +113,7 @@ def main():
             else:
                 tqdm.write(f"Skipping {i}: {pred_file} doesn't exist or is not a file.")
 
-    print(f"cnt: {cnt}, tot: {tot}, acc: {(cnt / tot) * 100:.2f}%")
+    print(f"cnt: {cnt}, tot: {tot}, acc: {(cnt / tot) * 100 if tot != 0 else 0:.2f}%")
 
 
 if __name__ == "__main__":
