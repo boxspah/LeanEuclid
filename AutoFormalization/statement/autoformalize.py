@@ -1,12 +1,10 @@
-import os
 import re
-import base64
 import argparse
 import random
-import tqdm
 import json
 
 from copy import deepcopy
+from tqdm import tqdm
 from AutoFormalization.utils import *
 from E3.validator import Validator
 
@@ -155,9 +153,13 @@ def main():
             testing_idx = range(1, 21)
         else:
             # testing_idx = [i for i in range(1, 49) if i not in [2, 6, 12, 32, 42]]
-            testing_idx = [1]
+            testing_idx = [1, 2]
 
-        for i in tqdm.tqdm(testing_idx):
+        for i in tqdm(testing_idx):
+            result_file = os.path.join(result_dir, str(i) + ".json")
+            if os.path.isfile(result_file):
+                tqdm.write(f"Skipping statement {i}: {result_file} already exists")
+                continue
             # model = GPT4(
             #     model=(
             #         "gpt-4-vision-preview"
@@ -220,7 +222,7 @@ def main():
                 try:
                     response = model.get_response()
                 except Exception as e:
-                    print(f"An error occurred: {e}")
+                    tqdm.write(f"An error occurred: {e}")
 
                 if response:
                     pattern = r"<<<(.*?)>>>"
@@ -231,7 +233,6 @@ def main():
                         pred = re.sub(r"\s+", " ", pred).strip()
                         error_message = validator.validate(pred, str(i))
                         if error_message is None:
-                            result_file = os.path.join(result_dir, str(i) + ".json")
                             with open(result_file, "w", encoding="utf-8") as f:
                                 json.dump(
                                     {
