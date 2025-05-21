@@ -28,7 +28,7 @@ class AzureModel(LanguageModel):
     @override
     def __init__(self, model: str, **request_params):
         super().__init__(model, **request_params)
-        self._client = AzureOpenAI(api_version="2024-10-21")
+        self._client = AzureOpenAI(api_version="2024-12-01-preview")
         self._messages: list[ChatCompletionMessageParam] = []
 
     @override

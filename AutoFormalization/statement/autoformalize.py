@@ -165,7 +165,7 @@ def main():
             #         else "gpt-4-1106-preview"
             #     )
             # )
-            model = AzureModel("o3-mini", max_completion_tokens=1000, temperature=0.2)
+            model = AzureModel("o3-mini", max_completion_tokens=2000)
             content = deepcopy(example_content)
 
             problem_text = ""
