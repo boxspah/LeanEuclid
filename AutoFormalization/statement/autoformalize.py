@@ -1,13 +1,19 @@
 import os
 import re
-import base64
 import argparse
 import random
-import tqdm
 import json
 
 from copy import deepcopy
-from AutoFormalization.utils import *
+from tqdm import tqdm
+from AutoFormalization.utils import (
+    GPT4,
+    ROOT_DIR,
+    EXAMPLE_DIR,
+    process_image,
+    lean_error,
+    parse_error,
+)
 from E3.validator import Validator
 
 
@@ -134,14 +140,16 @@ def main():
                 c,
             )
         )
-        result_dir = os.path.join(
-            ROOT_DIR,
-            "result",
-            "statement",
-            args.dataset,
-            args.reasoning,
-            str(args.num_examples) + "shot",
-            c,
+        result_dir = str(
+            os.path.join(
+                ROOT_DIR,
+                "result",
+                "statement",
+                args.dataset,
+                args.reasoning,
+                str(args.num_examples) + "shot",
+                c,
+            )
         )
         os.makedirs(result_dir, exist_ok=True)
 
@@ -154,9 +162,13 @@ def main():
         if args.dataset == "UniGeo":
             testing_idx = range(1, 21)
         else:
-            testing_idx = [i for i in range(1, 49) if i not in [2, 6, 12, 32, 42]]
+            testing_idx = [i for i in range(1, 49) if i not in {2, 6, 12, 32, 42}]
 
-        for i in tqdm.tqdm(testing_idx):
+        for i in tqdm(testing_idx):
+            result_file = os.path.join(result_dir, str(i) + ".json")
+            if os.path.isfile(result_file):
+                tqdm.write(f"Skipping statement {i}: {result_file} already exists")
+                continue
             model = GPT4(
                 model=(
                     "gpt-4-vision-preview"
@@ -189,7 +201,7 @@ def main():
                 formal_statement = match.group(1)
                 formal_statement = re.sub(r"\s+", " ", formal_statement)
 
-            content.append({"type": "text", "text": f"Here is your problem:\n"})
+            content.append({"type": "text", "text": "Here is your problem:\n"})
 
             if args.reasoning == "multi-modal":
                 image_path = os.path.join(
@@ -214,10 +226,11 @@ def main():
             model.add_message("user", content)
 
             for _ in range(args.num_query):
+                response = None
                 try:
                     response = model.get_response()
                 except Exception as e:
-                    print(f"An error occurred: {e}")
+                    tqdm.write(f"An error occurred: {e}")
 
                 if response:
                     pattern = r"<<<(.*?)>>>"
@@ -228,7 +241,6 @@ def main():
                         pred = re.sub(r"\s+", " ", pred).strip()
                         error_message = validator.validate(pred, str(i))
                         if error_message is None:
-                            result_file = os.path.join(result_dir, str(i) + ".json")
                             with open(result_file, "w", encoding="utf-8") as f:
                                 json.dump(
                                     {
