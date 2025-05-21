@@ -216,6 +216,7 @@ def main():
             model.add_message("user", content)
 
             for _ in range(args.num_query):
+                response = None
                 try:
                     response = model.get_response()
                 except Exception as e:
