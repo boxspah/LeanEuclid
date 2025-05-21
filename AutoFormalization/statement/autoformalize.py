@@ -155,7 +155,7 @@ def main():
             testing_idx = range(1, 21)
         else:
             # testing_idx = [i for i in range(1, 49) if i not in [2, 6, 12, 32, 42]]
-            testing_idx = [1, 2]
+            testing_idx = random.sample([i for i in range(1, 49) if i not in {2, 6, 12, 32, 42}], 5)
 
         for i in tqdm(testing_idx):
             result_file = os.path.join(result_dir, str(i) + ".json")
@@ -169,7 +169,7 @@ def main():
             #         else "gpt-4-1106-preview"
             #     )
             # )
-            model = AzureModel("o3-mini", max_completion_tokens=2000)
+            model = AzureModel("o3-mini", max_completion_tokens=4000)
             content = deepcopy(example_content)
 
             problem_text = ""
