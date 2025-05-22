@@ -86,6 +86,8 @@ def main():
             ),
             mode=args.mode,
             result_path=result_dir,
+            binTime=60,
+            approxTime=20,
         )
 
         if args.dataset == "UniGeo":
