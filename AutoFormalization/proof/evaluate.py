@@ -2,8 +2,8 @@ import os
 import signal
 import subprocess
 import argparse
-import tqdm
 
+from tqdm import tqdm
 from subprocess import Popen, PIPE
 from AutoFormalization.utils import *
 
@@ -74,31 +74,36 @@ def main():
 
     for c in args.category:
         print("Category: ", c)
-        result_dir = os.path.join(
-            ROOT_DIR,
-            "result",
-            "proof",
-            args.dataset,
-            args.reasoning,
-            str(args.num_examples) + "shot",
-            c,
+        result_dir = str(
+            os.path.join(
+                ROOT_DIR,
+                "result",
+                "proof",
+                args.dataset,
+                args.reasoning,
+                str(args.num_examples) + "shot",
+                c,
+            )
         )
 
         if args.dataset == "UniGeo":
             testing_idx = range(1, 21)
         else:
-            testing_idx = [i for i in range(1, 49) if i not in [2, 6, 12, 32, 42]]
+            testing_idx = [i for i in range(1, 49) if i not in {2, 6, 12, 32, 42}]
 
-        tot += len(testing_idx)
-
-        for i in tqdm.tqdm(testing_idx):
+        for i in tqdm(testing_idx):
             result_file = os.path.join(result_dir, str(i) + ".lean")
 
-            if os.path.exists(result_file):
+            if os.path.isfile(result_file):
+                tot += 1
                 if check(result_file):
                     cnt += 1
+            else:
+                tqdm.write(
+                    f"Skipping {i}: {result_file} doesn't exist or is not a file."
+                )
 
-    print(f"cnt: {cnt}, tot: {tot}, acc: {(cnt/tot)*100:.2f}%")
+    print(f"cnt: {cnt}, tot: {tot}, acc: {(cnt / tot) * 100 if tot != 0 else 0:.2f}%")
 
 
 if __name__ == "__main__":

@@ -1,10 +1,9 @@
-import os
 import re
 import argparse
 import random
-import tqdm
 import json
 
+from tqdm import tqdm
 from copy import deepcopy
 from AutoFormalization.utils import *
 
@@ -157,14 +156,16 @@ def main():
 
     for c in args.category:
         print("Category: ", c)
-        result_dir = os.path.join(
-            ROOT_DIR,
-            "result",
-            "proof",
-            args.dataset,
-            args.reasoning,
-            str(args.num_examples) + "shot",
-            c,
+        result_dir = str(
+            os.path.join(
+                ROOT_DIR,
+                "result",
+                "proof",
+                args.dataset,
+                args.reasoning,
+                str(args.num_examples) + "shot",
+                c,
+            )
         )
         os.makedirs(result_dir, exist_ok=True)
 
@@ -179,16 +180,22 @@ def main():
             testing_idx = range(1, 21)
         else:
             namespace = "Elements.Book1"
-            testing_idx = [i for i in range(1, 49) if i not in [2, 6, 12, 32, 42]]
+            testing_idx = [i for i in range(1, 49) if i not in {2, 6, 12, 32, 42}]
 
-        for i in tqdm.tqdm(testing_idx):
-            model = GPT4(
-                model=(
-                    "gpt-4-vision-preview"
-                    if args.reasoning == "multi-modal"
-                    else "gpt-4-1106-preview"
-                )
-            )
+        for i in tqdm(testing_idx):
+            result_file = os.path.join(result_dir, str(i) + ".lean")
+            if os.path.isfile(result_file):
+                tqdm.write(f"Skipping proof {i}: {result_file} already exists")
+                continue
+
+            # model = GPT4(
+            #     model=(
+            #         "gpt-4-vision-preview"
+            #         if args.reasoning == "multi-modal"
+            #         else "gpt-4-1106-preview"
+            #     )
+            # )
+            model = AzureModel("o3-mini")
             content = deepcopy(example_content)
 
             if args.dataset == "UniGeo":
@@ -230,7 +237,7 @@ def main():
                 formal_statement = match.group(1)
                 formal_statement = re.sub(r"\s+", " ", formal_statement)
 
-            content.append({"type": "text", "text": f"Here is your problem:\n"})
+            content.append({"type": "text", "text": "Here is your problem:\n"})
 
             if args.reasoning == "multi-modal":
                 image_path = os.path.join(
@@ -263,10 +270,11 @@ def main():
             model.add_message("user", content)
 
             for _ in range(args.num_query):
+                response = None
                 try:
                     response = model.get_response()
                 except Exception as e:
-                    print(f"An error occurred: {e}")
+                    tqdm.write(f"An error occurred: {e}")
 
                 if response:
                     pattern = r"<<<(.*?)>>>"
@@ -275,7 +283,6 @@ def main():
                     if match:
                         pred = match.group(1)
                         pred = pred.strip()
-                        result_file = os.path.join(result_dir, str(i) + ".lean")
                         with open(result_file, "w") as f:
                             lean_file = format_content(
                                 args.dataset,
