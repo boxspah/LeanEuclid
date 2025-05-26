@@ -296,7 +296,9 @@ def main():
                     else:
                         model.add_message("assistant", response)
                         model.add_message("user", parse_error())
-                        tqdm.write(f"Query {q} failed: incorrect output format")
+                        tqdm.write(
+                            f"Query {q} failed for proof {i}: incorrect output format"
+                        )
 
 
 if __name__ == "__main__":
