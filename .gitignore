@@ -142,3 +142,6 @@ dmypy.json
 
 # All JetBrains settings
 .idea/
+
+# Experiment logs
+logs/
