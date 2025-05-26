@@ -218,7 +218,7 @@ def main():
             model.add_message("system", instruction)
             model.add_message("user", content)
 
-            for _ in range(args.num_query):
+            for q in range(args.num_query):
                 response = None
                 try:
                     response = model.get_response()
@@ -247,9 +247,11 @@ def main():
                         else:
                             model.add_message("assistant", response)
                             model.add_message("user", lean_error(error_message))
+                            tqdm.write(f"Query {q} failed: malformed Lean expression")
                     else:
                         model.add_message("assistant", response)
                         model.add_message("user", parse_error())
+                        tqdm.write(f"Query {q} failed: incorrect output format")
 
 
 if __name__ == "__main__":
