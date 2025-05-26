@@ -4,13 +4,14 @@ import subprocess
 import argparse
 
 from tqdm import tqdm
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, SubprocessError
 from AutoFormalization.utils import *
 
 
 def check(lean_file):
+    process = None
+    command = ["lake", "env", "lean", "--run", lean_file]
     try:
-        command = ["lake", "env", "lean", "--run", lean_file]
         process = Popen(
             command, stdout=PIPE, stderr=PIPE, cwd=ROOT_DIR, preexec_fn=os.setsid
         )
@@ -19,8 +20,9 @@ def check(lean_file):
             return True
         else:
             return False
-    except:
-        os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+    except (SubprocessError, OSError):
+        if process:
+            os.killpg(os.getpgid(process.pid), signal.SIGTERM)
 
         def kill_running_process(process_name):
             result = subprocess.run(["pgrep", process_name], stdout=subprocess.DEVNULL)

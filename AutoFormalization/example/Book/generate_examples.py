@@ -11,7 +11,7 @@ def main():
     # os.makedirs(f'diagrams', exist_ok=True)
     # os.makedirs(f'texts', exist_ok=True)
     # os.makedirs(f'formalizations', exist_ok=True)
-    os.makedirs(f"texts_proofs", exist_ok=True)
+    os.makedirs("texts_proofs", exist_ok=True)
 
     sampled_idx = [2, 6, 12, 32, 42]
 
@@ -31,7 +31,7 @@ def main():
         original_text_path = os.path.join(
             ROOT_DIR, "Book", "texts_proofs", f"{idx}.txt"
         )
-        text_path = f"texts_proofs/{i+1}.txt"
+        text_path = f"texts_proofs/{i + 1}.txt"
         shutil.copy(original_text_path, text_path)
 
 
