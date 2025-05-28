@@ -22,7 +22,8 @@ def check(lean_file):
             print(f"{stdout=}")
             print(f"{stderr=}")
             return False
-    except (SubprocessError, OSError):
+    except (SubprocessError, OSError) as e:
+        print(f"Unexpected error: {e}")
         if process:
             os.killpg(os.getpgid(process.pid), signal.SIGTERM)
 

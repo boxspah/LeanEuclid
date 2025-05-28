@@ -63,6 +63,8 @@ class Checker:
                 print(f"{stdout=}")
                 print(f"{stderr=}")
                 return False
-        except:
-            os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+        except (SubprocessError, OSError) as e:
+            print(f"Unexpected error: {e}")
+            if process:
+                os.killpg(os.getpgid(process.pid), signal.SIGTERM)
             return False
