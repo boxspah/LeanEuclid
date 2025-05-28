@@ -236,7 +236,6 @@ def remove_all_guards(x: PropData):
 
 
 def main():
-
     parser = argparse.ArgumentParser()
     parser.add_argument("--inFile", type=str)
     parser.add_argument("--outFile", type=str)

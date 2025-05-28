@@ -52,7 +52,9 @@ class Checker:
             process = Popen(
                 command, stdin=PIPE, stdout=PIPE, cwd=ROOT_DIR, preexec_fn=os.setsid
             )
-            stdout, stderr = (x.decode() for x in process.communicate())
+            stdout, stderr = (
+                x.decode() if x is not None else None for x in process.communicate()
+            )
             with open(output_json_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
