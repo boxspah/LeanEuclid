@@ -195,7 +195,7 @@ def main():
             #         else "gpt-4-1106-preview"
             #     )
             # )
-            model = AzureModel("o3-mini")
+            model = AzureModel("o4-mini")
             content = deepcopy(example_content)
 
             if args.dataset == "UniGeo":
