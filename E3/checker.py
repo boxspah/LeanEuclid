@@ -3,15 +3,15 @@ import signal
 import json
 
 from E3.utils import *
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, SubprocessError
 
 
 class Checker:
     def __init__(
         self,
-        nperms=3,
-        binTime=15,
-        approxTime=5,
+        n_perms=3,
+        bin_time=15,
+        approx_time=5,
         mode="skipApprox",
         tmp_path=os.path.join(ROOT_DIR, "tmp", "check"),
         result_path=os.path.join(ROOT_DIR, "results"),
@@ -21,43 +21,47 @@ class Checker:
         self.result_path = result_path
         os.makedirs(self.result_path, exist_ok=True)
 
-        self.nPermutations = nperms
-        self.equivSolverTime = binTime
-        self.approxSolverTime = approxTime
+        self.n_permutations = n_perms
+        self.equiv_solver_time = bin_time
+        self.approx_solver_time = approx_time
         self.mode = mode
 
-    def check(self, ground, test, instanceName):
-        tmpFile = os.path.join(self.tmp_path, instanceName + ".lean")
-        with open(tmpFile, "w") as file:
-            leanFile = format_lean_checker_file(ground, test)
-            file.write(leanFile)
-        outputJsonFile = os.path.join(self.result_path, instanceName + ".json")
+    def check(self, ground, test, instance_name):
+        tmp_file = os.path.join(self.tmp_path, instance_name + ".lean")
+        with open(tmp_file, "w") as file:
+            lean_file = format_lean_checker_file(ground, test)
+            file.write(lean_file)
+        output_json_file = os.path.join(self.result_path, instance_name + ".json")
+        process = None
         command = [
             "lake",
             "env",
             "lean",
             "--run",
-            tmpFile,
-            instanceName,
+            tmp_file,
+            instance_name,
             self.mode,
-            str(self.nPermutations),
-            str(self.equivSolverTime),
-            str(self.approxSolverTime),
+            str(self.n_permutations),
+            str(self.equiv_solver_time),
+            str(self.approx_solver_time),
             "true",
-            outputJsonFile,
+            output_json_file,
         ]
-        process = Popen(
-            command, stdin=PIPE, stdout=PIPE, cwd=ROOT_DIR, preexec_fn=os.setsid
-        )
+
         try:
-            process.communicate()
-            with open(outputJsonFile, "r", encoding="utf-8") as f:
+            process = Popen(
+                command, stdin=PIPE, stdout=PIPE, cwd=ROOT_DIR, preexec_fn=os.setsid
+            )
+            stdout, stderr = (x.decode() for x in process.communicate())
+            with open(output_json_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
-            result = data[instanceName]["binary_check"]
+            result = data[instance_name]["binary_check"]
             if result == "equiv":
                 return True
             else:
+                print(f"{stdout=}")
+                print(f"{stderr=}")
                 return False
         except:
             os.killpg(os.getpgid(process.pid), signal.SIGTERM)
