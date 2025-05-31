@@ -248,7 +248,7 @@ def main():
                             model.add_message("assistant", response)
                             model.add_message("user", lean_error(error_message))
                             tqdm.write(
-                                f"Query {q} failed for statement {i}: malformed Lean expression"
+                                f"Query {q} failed for statement {i}: {error_message}"
                             )
                     else:
                         model.add_message("assistant", response)

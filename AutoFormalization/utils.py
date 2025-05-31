@@ -42,6 +42,7 @@ class AzureModel(LanguageModel):
         completion = self._client.chat.completions.create(
             model=self._model, messages=self._messages, **self._request_params
         )
+        print(f"Full response: {completion}")
         return completion.choices[0].message.content
 
 
