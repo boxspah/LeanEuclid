@@ -80,10 +80,7 @@ def count_binary_checks(directory: Path) -> Counter[str]:
 
     counter: Counter[str] = Counter()
     for file_path in sorted(directory.iterdir()):
-        if (
-            file_path.is_file()
-            and file_path.suffix == ".json"
-        ):
+        if file_path.is_file() and file_path.suffix == ".json":
             value = extract_binary_check(file_path)
             counter[value] += 1
 
