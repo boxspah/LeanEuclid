@@ -28,7 +28,7 @@ class AzureModel(LanguageModel):
     @override
     def __init__(self, model: str, **request_params):
         super().__init__(model, **request_params)
-        self._client = AzureOpenAI(api_version="2024-12-01-preview")
+        self._client = AzureOpenAI(api_version="2025-04-01-preview")
         self._messages: list[ChatCompletionMessageParam] = []
 
     @override
@@ -38,12 +38,15 @@ class AzureModel(LanguageModel):
         )
 
     @override
-    def get_response(self) -> str:
-        completion = self._client.chat.completions.create(
-            model=self._model, messages=self._messages, **self._request_params
+    def get_response(self, show_reasoning: bool = False) -> str:
+        response = self._client.responses.create(
+            model=self._model,
+            input=self._messages,
+            reasoning={"summary": "auto"} if show_reasoning else None,
+            store=False,
         )
-        print(f"Full response: {completion}")
-        return completion.choices[0].message.content
+        print(f"Full response: {response}")
+        return response.output_text
 
 
 class GPT4(LanguageModel):

@@ -12,7 +12,7 @@ from E3.validator import Validator
 def examples(dataset, category, num, reasoning):
     content = [
         {
-            "type": "text",
+            "type": "input_text",
             "text": "Here are some examples:\n" if num > 1 else "Here is an example:\n",
         }
     ]
@@ -49,14 +49,15 @@ def examples(dataset, category, num, reasoning):
             image = process_image(image_path)
             content.append(
                 {
-                    "type": "image_url",
-                    "image_url": {"url": f"data:image/png;base64,{image}"},
+                    "type": "input_image",
+                    "detail": "auto",
+                    "image_url": f"data:image/png;base64,{image}",
                 }
             )
 
         content.append(
             {
-                "type": "text",
+                "type": "input_text",
                 "text": f"English Statement: {input_text}\nFormalized Statement: <<< {formal_statement} >>>\n",
             }
         )
@@ -194,7 +195,7 @@ def main():
                 formal_statement = match.group(1)
                 formal_statement = re.sub(r"\s+", " ", formal_statement)
 
-            content.append({"type": "text", "text": "Here is your problem:\n"})
+            content.append({"type": "input_text", "text": "Here is your problem:\n"})
 
             if args.reasoning == "multi-modal":
                 image_path = os.path.join(
@@ -203,14 +204,15 @@ def main():
                 image = process_image(image_path)
                 content.append(
                     {
-                        "type": "image_url",
-                        "image_url": {"url": f"data:image/png;base64,{image}"},
+                        "type": "input_image",
+                        "detail": "auto",
+                        "image_url": f"data:image/png;base64,{image}",
                     }
                 )
 
             content.append(
                 {
-                    "type": "text",
+                    "type": "input_text",
                     "text": f"English Statement: {problem_text}\nFormalized Statement: ",
                 }
             )
