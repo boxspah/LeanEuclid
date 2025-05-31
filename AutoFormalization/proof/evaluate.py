@@ -15,7 +15,7 @@ def check(lean_file):
         process = Popen(
             command, stdout=PIPE, stderr=PIPE, cwd=ROOT_DIR, preexec_fn=os.setsid
         )
-        stdout, stderr = (x.decode() for x in process.communicate())
+        stdout, stderr = (x.decode() for x in process.communicate(timeout=5))
         if "error" not in stdout and "error" not in stderr:
             return True
         else:
