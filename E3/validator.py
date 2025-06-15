@@ -1,8 +1,7 @@
 import os
 import re
-import signal
 
-from E3.utils import *
+from E3.utils import ROOT_DIR, format_test_file
 from subprocess import Popen, PIPE, SubprocessError
 
 
@@ -11,7 +10,10 @@ class Validator:
         self.tmp_path = tmp_path
         os.makedirs(self.tmp_path, exist_ok=True)
 
-    def validate(self, expression, instance_name):
+    def validate(self, expression: str, instance_name: str) -> str | None:
+        """
+        Return ``None`` if validation succeeds. Otherwise, return a cleaned version of the error or warning that can be passed back to the model.
+        """
         tmp_file = os.path.join(self.tmp_path, instance_name + ".lean")
         os.makedirs(os.path.dirname(tmp_file), exist_ok=True)
 
@@ -19,21 +21,31 @@ class Validator:
         with open(tmp_file, "w") as file:
             file.write(lean_file)
 
-        process = None
         command = ["lake", "env", "lean", "--run", tmp_file]
         try:
-            process = Popen(
-                command, stdin=PIPE, stdout=PIPE, cwd=ROOT_DIR, preexec_fn=os.setsid
-            )
-            stdout, _ = process.communicate()
-            if stdout == b"":
+            with Popen(
+                command,
+                stdout=PIPE,
+                stderr=PIPE,
+                cwd=ROOT_DIR,
+                start_new_session=True,
+                text=True,
+                encoding="utf-8",
+            ) as process:
+                stdout, stderr = map(
+                    lambda x: re.sub(r"/[^:]+:\d+:\d+: ", "", str.strip(x)),
+                    process.communicate(),
+                )
+
+                # validator gave an error or warning
+                if stdout:
+                    return stdout
+                if stderr:
+                    return stderr
+
+                # validator exited normally
                 return None
-            else:
-                error = stdout.decode()
-                error = re.sub(r"/[^:]+:\d+:\d+: ", "", error)
-                return error
+
         except (SubprocessError, OSError) as e:
-            print(f"Unexpected error: {e}")
-            if process:
-                os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+            print(f"⚠️  Failed to execute validator: {e}")
             return "Unexpected error"
