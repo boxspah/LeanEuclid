@@ -11,7 +11,7 @@ inductive Triangle | ofPoints (a b c : Point)
 -- Notations and Macros for Geometric Entities --
 "|(a─b)|" means the length of the line segment between point a and point b.
 "∠ a:b:c" means the degree of the angle formed by points a, b, and c.
-"∟" means the right angle.
+"∟" means the degree of the right angle, 90 degrees.
 "△ a:b:c" means the triangle formed from points a, b and c.
 "Triangle.area △ a:b:c" means the area of the triangle formed by points a, b and c.
 
