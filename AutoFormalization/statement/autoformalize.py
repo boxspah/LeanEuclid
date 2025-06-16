@@ -153,7 +153,7 @@ def main():
             )
 
         if args.dataset == "UniGeo":
-            testing_idx = range(1, 21)
+            testing_idx = [16, 6, 17, 5, 13]  # random sample
         else:
             testing_idx = [i for i in range(1, 49) if i not in {2, 6, 12, 32, 42}]
 
@@ -169,7 +169,7 @@ def main():
             #         else "gpt-4-1106-preview"
             #     )
             # )
-            model = AzureModel("o4-mini")
+            model = AzureModel("gpt-4.1-mini")
             content = deepcopy(example_content)
 
             problem_text = ""
