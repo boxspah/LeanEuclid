@@ -20,7 +20,10 @@ namespace Point
 def onLine (a : Point) (L : Line) -- point a is on line L.
 def sameSide (a b : Point) (L : Line) -- point a and b are on the same side of line L.
 def opposingSides (a b : Point) (L : Line) -- point a and b are on the opposite sides of line L.
-def collinear : (a b c : Point) -- points a, b and c are collinear.
+def onCircle (a: Point) (C: Circle) -- point a is on circle C.
+def insideCircle (a: Point) (C: Circle) -- point a is inside circle C.
+def outsideCircle (a: Point) (C: Circle)-- point a is outside circle C.
+def isCentre (a: Point) (C: Circle) -- point a is on the center circle C.
 end Point
 
 namespace Line
@@ -29,10 +32,6 @@ def intersectsCircle (L : Line) (C : Circle) -- line L and circle C intersect.
 end Line
 
 namespace Circle
-def onCircle (a: Point) (C: Circle) -- point a is on circle C.
-def insideCircle (a: Point) (C: Circle) -- point a is inside circle C.
-def outsideCircle (a: Point) (C: Circle)-- point a is outside circle C.
-def isCentre (a: Point) (C: Circle) -- point a is on the center circle C.
 def intersectsCircle (C1 C2: Circle) -- circle C1 and C2 intersect.
 end Circle
 
