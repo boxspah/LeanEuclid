@@ -27,7 +27,7 @@ def isCentre (a: Point) (C: Circle) -- point a is on the center circle C.
 end Point
 
 namespace Line
-def intersectsLine (L M : Line) -- two lines L and M intersect at some point.
+def intersectsLine (L M : Line) -- two lines L and M intersect at an unnamed point.
 def intersectsCircle (L : Line) (C : Circle) -- line L and circle C intersect.
 end Line
 
