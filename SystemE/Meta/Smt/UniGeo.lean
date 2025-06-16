@@ -5,7 +5,7 @@ open Lean
 /- A few handcoded translations for UniGeo-specific constructs and abbreviations, not required for formalizing *Elements* -/
 
 
-def mkAngleExpr (a b c : Expr) : Expr := mkApp3 (.const `Angle.ofPoints []) a b c
+def mkAngleExpr (a b c : Expr) : Expr := .app (.const `Angle.degree []) (mkApp3 (.const `Angle.ofPoints []) a b c)
 def mkSegmentLengthExpr (a b : Expr) : Expr := .app (.const `Segment.length []) (mkApp2 (.const (`Segment.endpoints) []) a b)
 def mkDisj (a b : Expr) : Expr := mkApp2 (.const `Or []) a b
 def mkConj (a b : Expr) : Expr := mkApp2 (.const `And []) a b
