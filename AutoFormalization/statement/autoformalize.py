@@ -1,3 +1,4 @@
+import os
 import re
 import argparse
 import random
@@ -5,7 +6,14 @@ import json
 
 from copy import deepcopy
 from tqdm import tqdm
-from AutoFormalization.utils import *
+from AutoFormalization.utils import (
+    EXAMPLE_DIR,
+    ROOT_DIR,
+    AzureModel,
+    process_image,
+    lean_error,
+    parse_error,
+)
 from E3.validator import Validator
 
 

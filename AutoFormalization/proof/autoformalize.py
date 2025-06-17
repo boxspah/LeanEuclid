@@ -1,3 +1,4 @@
+import os
 import re
 import argparse
 import random
@@ -5,7 +6,14 @@ import json
 
 from tqdm import tqdm
 from copy import deepcopy
-from AutoFormalization.utils import *
+from AutoFormalization.utils import (
+    ROOT_DIR,
+    EXAMPLE_DIR,
+    AzureModel,
+    process_image,
+    format_content,
+    parse_error,
+)
 
 
 def preceding_propositions(idx):

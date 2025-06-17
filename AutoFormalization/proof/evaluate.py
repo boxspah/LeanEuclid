@@ -5,7 +5,7 @@ import argparse
 
 from tqdm import tqdm
 from subprocess import Popen, PIPE, SubprocessError
-from AutoFormalization.utils import *
+from AutoFormalization.utils import ROOT_DIR
 
 
 def check(lean_file):
