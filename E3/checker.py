@@ -1,8 +1,7 @@
 import os
-import signal
 import json
 
-from E3.utils import ROOT_DIR, format_lean_checker_file
+from E3.utils import ROOT_DIR, format_lean_checker_file, remove_error_source
 from subprocess import Popen, PIPE, SubprocessError
 
 
@@ -26,13 +25,19 @@ class Checker:
         self.approx_solver_time = approx_time
         self.mode = mode
 
-    def check(self, ground, test, instance_name):
+    def check(self, ground: str, test: str, instance_name: str) -> bool:
+        """
+        Check the logical equivalence of ``ground`` and ``test`` using E3, and write the
+        result to a file with the same name as the ``instance_name``.
+
+        :returns: ``True`` iff ``ground`` is equivalent to ``test``
+        """
         tmp_file = os.path.join(self.tmp_path, instance_name + ".lean")
         with open(tmp_file, "w") as file:
             lean_file = format_lean_checker_file(ground, test)
             file.write(lean_file)
         output_json_file = os.path.join(self.result_path, instance_name + ".json")
-        process = None
+
         command = [
             "lake",
             "env",
@@ -49,24 +54,34 @@ class Checker:
         ]
 
         try:
-            process = Popen(
-                command, stdin=PIPE, stdout=PIPE, cwd=ROOT_DIR, preexec_fn=os.setsid
-            )
-            stdout, stderr = (
-                x.decode() if x is not None else None for x in process.communicate()
-            )
-            with open(output_json_file, "r", encoding="utf-8") as f:
-                data = json.load(f)
+            with Popen(
+                command,
+                stdout=PIPE,
+                stderr=PIPE,
+                cwd=ROOT_DIR,
+                start_new_session=True,
+                text=True,
+                encoding="utf-8",
+            ) as process:
+                stdout, stderr = map(
+                    lambda x: remove_error_source(x.strip()), process.communicate()
+                )
 
-            result = data[instance_name]["binary_check"]
-            if result == "equiv":
-                return True
-            else:
-                print(f"{stdout=}")
-                print(f"{stderr=}")
-                return False
+                if stdout:
+                    print(stdout)
+                if stderr:
+                    print(stderr)
+
+                if "error" in stdout or stderr:
+                    return False
+
+                try:
+                    with open(output_json_file, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                    return data[instance_name]["binary_check"] == "equiv"
+                except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
+                    print(f"⚠️  Failed to parse output file: {e}")
+                    return False
         except (SubprocessError, OSError) as e:
-            print(f"Unexpected error: {e}")
-            if process:
-                os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+            print(f"⚠️  Failed to execute checker: {e}")
             return False
