@@ -1,8 +1,7 @@
 import os
-import re
 import signal
 
-from E3.utils import *
+from E3.utils import ROOT_DIR, format_test_file, remove_error_source
 from subprocess import Popen, PIPE
 
 
@@ -28,9 +27,7 @@ class Validator:
             if stdout == b"":
                 return None
             else:
-                error = stdout.decode()
-                error = re.sub(r"/[^:]+:\d+:\d+: ", "", error)
-                return error
+                return remove_error_source(stdout.decode())
         except:
             os.killpg(os.getpgid(process.pid), signal.SIGTERM)
             return "Unexpected error"
