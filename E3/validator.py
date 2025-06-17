@@ -1,7 +1,6 @@
 import os
-import re
 
-from E3.utils import ROOT_DIR, format_test_file
+from E3.utils import ROOT_DIR, format_test_file, remove_error_source
 from subprocess import Popen, PIPE, SubprocessError
 
 
@@ -33,8 +32,7 @@ class Validator:
                 encoding="utf-8",
             ) as process:
                 stdout, stderr = map(
-                    lambda x: re.sub(r"/[^:]+:\d+:\d+: ", "", str.strip(x)),
-                    process.communicate(),
+                    lambda x: remove_error_source(x.strip()), process.communicate()
                 )
 
                 # validator gave an error or warning
