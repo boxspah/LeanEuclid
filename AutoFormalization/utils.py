@@ -1,5 +1,7 @@
 import os
 import base64
+import re
+import signal
 from abc import ABCMeta, abstractmethod
 from typing import Any, Final, override, cast
 
@@ -118,3 +120,32 @@ theorem {theorem_name} : {theorem} := by
 end {namespace}
 """
     return result
+
+
+def remove_error_source(message: str) -> str:
+    """
+    Strip the leading error source from a Lean error message.
+
+    Example:
+    >>> remove_error_source(
+        "/home/johndoe/.../LeanEuclid/result/proof/Book/text-only/0shot/2.lean:6:35: error: ..."
+    )
+    error: ...
+    """
+    return re.sub(r"/[^:]+:\d+:\d+: ", "", message)
+
+
+def kill_process_group(pgid: int) -> None:
+    """
+    Kill all processes in the process group using ``SIGKILL``.
+    Useful for killing z3 and cvc5 solvers spawned by a checker.
+
+    :param pgid: ID of the process group to kill
+    """
+    try:
+        os.killpg(pgid, signal.SIGKILL)
+    except ProcessLookupError:
+        # Process group already exited
+        pass
+    except PermissionError:
+        print("⚠️  Insufficient permission to kill process group", pgid)

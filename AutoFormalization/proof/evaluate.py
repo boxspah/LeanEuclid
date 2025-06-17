@@ -1,41 +1,57 @@
 import os
-import signal
-import subprocess
 import argparse
 
 from tqdm import tqdm
-from subprocess import Popen, PIPE, SubprocessError
-from AutoFormalization.utils import ROOT_DIR
+from subprocess import Popen, PIPE, SubprocessError, TimeoutExpired
+from AutoFormalization.utils import ROOT_DIR, remove_error_source, kill_process_group
 
 
-def check(lean_file):
-    process = None
+def check(lean_file: str, timeout: int = 5) -> bool:
+    """
+    Return whether the proof contained in ``lean_file`` is valid.
+    """
     command = ["lake", "env", "lean", "--run", lean_file]
+    process: Popen[str] | None = None
+    timeout_flag: bool = False
     try:
-        process = Popen(
-            command, stdout=PIPE, stderr=PIPE, cwd=ROOT_DIR, preexec_fn=os.setsid
-        )
-        stdout, stderr = (x.decode() for x in process.communicate(timeout=5))
-        if "error" not in stdout and "error" not in stderr:
-            return True
-        else:
-            print(f"{stdout=}")
-            print(f"{stderr=}")
+        with Popen(
+            command,
+            stdout=PIPE,
+            stderr=PIPE,
+            cwd=ROOT_DIR,
+            start_new_session=True,
+            text=True,
+            encoding="utf-8",
+        ) as process:
+            try:
+                stdout, stderr = map(
+                    lambda x: remove_error_source(x.strip()),
+                    process.communicate(timeout=timeout),
+                )
+            except TimeoutExpired:
+                timeout_flag = True
+                print(f"⚠️  Failed to check proof within {timeout} seconds.")
+
+                # need to manually kill process and wait
+                kill_process_group(process.pid)
+                stdout, stderr = process.communicate()
+
+            # if a timeout occurred, fail regardless of the output on stdout and stderr
+            if not timeout_flag and "error" not in stdout and "error" not in stderr:
+                return True
+
+            if stdout:
+                print(stdout)
+            if stderr:
+                print(stderr)
             return False
+
     except (SubprocessError, OSError) as e:
-        print(f"Unexpected error: {e}")
-        if process:
-            os.killpg(os.getpgid(process.pid), signal.SIGTERM)
-
-        def kill_running_process(process_name):
-            result = subprocess.run(["pgrep", process_name], stdout=subprocess.DEVNULL)
-            if not result.returncode:
-                subprocess.run(["pkill", process_name], stdout=subprocess.DEVNULL)
-
-        kill_running_process("cvc5")
-        kill_running_process("z3")
-
+        print(f"⚠️  Lean failed to check proof: {e}")
         return False
+    finally:
+        if process and process.pid and not timeout_flag:
+            kill_process_group(process.pid)
 
 
 def main():
