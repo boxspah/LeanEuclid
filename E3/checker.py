@@ -1,7 +1,12 @@
 import os
 import json
 
-from E3.utils import ROOT_DIR, format_lean_checker_file, remove_error_source
+from E3.utils import (
+    ROOT_DIR,
+    format_lean_checker_file,
+    remove_error_source,
+    kill_process_group,
+)
 from subprocess import Popen, PIPE, SubprocessError
 
 
@@ -53,6 +58,7 @@ class Checker:
             output_json_file,
         ]
 
+        process: Popen[str] | None = None
         try:
             with Popen(
                 command,
@@ -85,3 +91,6 @@ class Checker:
         except (SubprocessError, OSError) as e:
             print(f"⚠️  Failed to execute checker: {e}")
             return False
+        finally:
+            if process and process.pid:
+                kill_process_group(process.pid)
