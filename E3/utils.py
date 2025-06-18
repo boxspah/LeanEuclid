@@ -1,5 +1,7 @@
 import os
 import re
+import signal
+
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -54,3 +56,19 @@ def remove_error_source(message: str) -> str:
     error: ...
     """
     return re.sub(r"/[^:]+:\d+:\d+: ", "", message)
+
+
+def kill_process_group(pgid: int) -> None:
+    """
+    Kill all processes in the process group using ``SIGKILL``.
+    Useful for killing z3 and cvc5 solvers spawned by a checker.
+
+    :param pgid: ID of the process group to kill
+    """
+    try:
+        os.killpg(pgid, signal.SIGKILL)
+    except ProcessLookupError:
+        # Process group already exited
+        pass
+    except PermissionError:
+        print("⚠️  Insufficient permission to kill process group", pgid)
