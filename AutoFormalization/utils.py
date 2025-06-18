@@ -26,6 +26,7 @@ class GPT4:
             temperature=self.temperature,
             max_tokens=self.max_tokens,
         )
+        print(f"Full response: {completion}")
         return completion.choices[0].message.content
 
 
